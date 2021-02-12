@@ -17,7 +17,7 @@
             round
             class="text-red"
             icon="delete"
-            @click="deleteNote"
+            @click="deleteNote(item._id)"
           />
         </div>
       </div>
@@ -47,9 +47,9 @@ export default {
 
   methods: {
     onSubmit() {
-      var data = JSON.stringify({ content: this.text });
+      const data = JSON.stringify({ content: this.text });
 
-      var config = {
+      const config = {
         method: "post",
         url: "http://localhost:8080/add",
         headers: {
@@ -68,8 +68,25 @@ export default {
         });
     },
 
-    deleteNote() {
-      console.log(mess);
+    deleteNote(id) {
+      const config = {
+        method: 'delete',
+        url: `http://localhost:8080/delete/${id}`,
+        headers: { 
+          'Content-Type': 'application/json'
+        },
+      };
+
+      axios(config)
+      .then((response) => {
+        console.log(response.data);
+        if (response.data.message){
+          this.$emit('update-note')
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
     }
   }
 };
