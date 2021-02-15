@@ -11,7 +11,12 @@
           </q-card-section>
         </q-card>
         <div class="col-md-2">
-          <q-btn flat round class="text-blue" icon="edit" />
+          <q-btn 
+            flat 
+            round 
+            class="text-blue" 
+            icon="edit" 
+            @click="openEdit(item._id)"/>
           <q-btn
             flat
             round
@@ -20,6 +25,38 @@
             @click="deleteNote(item._id)"
           />
         </div>
+      <!--------------------------- EDIT MODAL ------------------------------>
+        <q-dialog v-model="edit">
+          <q-card style="width: 500px; max-width: 70vw;">
+            <q-card-section class="row items-center q-pb-none">
+              <div class="text-h6">Modifier la tâche</div>
+              <q-space />
+              <q-btn icon="close" flat round dense v-close-popup />
+            </q-card-section>
+
+            <q-card-section>
+              <q-form
+                @submit="updateNote"
+                class="q-gutter-md"
+              >
+                <q-input
+                  filled
+                  v-model="currentContent"
+                  hint="Contenue de la tâche"
+                  lazy-rules
+                  :rules="[ val => val && val.length > 0 || 'Please type something']"
+                />
+
+                <q-toggle v-model="currentStatus" :label="currentStatus ? 'A Faire' : 'Terminée' " />
+
+                <div>
+                  <q-btn label="Valider" type="submit" color="primary"/>
+                </div>
+              </q-form>
+            </q-card-section>
+          </q-card>
+        </q-dialog>
+<!--------------------------- END  EDIT MODAL ------------------------------>
       </div>
     </q-card-section>
     <q-card-actions align="around" v-if="status == 'pending'">
@@ -36,12 +73,15 @@ export default {
     title: String,
     notes: [Object],
     status: String,
-    update: Function
   },
 
   data() {
     return {
-      text: ""
+      text: "",
+      edit : false,
+      currentContent : "",
+      currentStatus : "",
+      noteId : "",
     };
   },
 
@@ -67,6 +107,38 @@ export default {
           console.log(error);
         });
     },
+    openEdit(id) {
+      const currentNote = this.notes.filter( note => note._id == id)[0]
+      console.log(currentNote)
+      this.edit = true;
+      this.noteId = currentNote._id;
+      this.currentContent = currentNote.content;
+      this.currentStatus = currentNote.status == "pending" ? false : true 
+    },
+    updateNote(){
+      const newStatus = this.currentStatus ? "done" : "pending";
+      const data = JSON.stringify({"status": newStatus, "content": this.currentContent});
+
+      const config = {
+        method: 'patch',
+        url: `http://localhost:8080/update/${this.noteId}`,
+        headers: { 
+          'Content-Type': 'application/json'
+        },
+        data : data
+      };
+
+      axios(config)
+      .then((response) => {
+        console.log(response.data);
+        this.$emit("update-note");
+        this.edit = false;
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+
+    },
 
     deleteNote(id) {
       const config = {
@@ -88,6 +160,7 @@ export default {
         console.log(error);
       });
     }
+
   }
 };
 </script>
