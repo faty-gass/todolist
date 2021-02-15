@@ -1,16 +1,19 @@
 <template>
-  <q-page class="q-pa-md">
+  <q-page class="q-pa-sm flex flex-center">
+
     <div class="row">
       <div
         v-for="(item, idx) in columns"
         :key="idx"
-        class="col-12 col-md q-px-md"
+        class="col-12 col-md-6 q-pa-md"
       >
         <BlocNote
           :title="item.title"
           :notes="item.data"
           :status="item.status"
+          v-on:update-note="getAllNotes"
         />
+        
       </div>
     </div>
   </q-page>
@@ -18,31 +21,64 @@
 
 <script>
 import BlocNote from "src/components/BlocNote.vue";
+import axios from "axios";
+
 export default {
   name: "PageIndex",
   components: { BlocNote },
 
   data() {
-    let pending_notes = [
-      { _id: 1, content: "note en cours 1" },
-      { _id: 2, content: "note en cours 2" }
-    ];
-    let done_notes = [
-      { _id: 3, content: "note terminée 1" },
-      { _id: 4, content: "note terminée 2" },
-      { _id: 5, content: "note terminée 3" }
-    ];
+
     return {
+      allNotes : [ ],
       columns: [
         {
           title: "Tâches à faire",
           status: "pending",
-          data: pending_notes
+          data: []
         },
-        { title: "Tâches terminées", status: "done", data: done_notes }
+        { title: "Tâches terminées", status: "done", data: [] }
       ]
     };
+  },
+
+  computed : {
+/*     pending_notes(){
+      return this.allNotes.filter( note => note.status == "pending")
+    },
+    done_notes(){
+      return this.allNotes.filter( note => note.status == "done")
+    } */
+  },
+
+  mounted() {
+    this.getAllNotes()
+  },
+    
+
+  methods : {
+    getAllNotes (){
+      axios
+      .get('http://localhost:8080/show')
+      .then(response => {
+        //console.log(response.data);
+        this.allNotes = response.data
+        console.log("notes", this.allNotes)
+        
+        let pendingColumn = this.columns.find( note => note.status == "pending");
+        pendingColumn.data = response.data.filter( note => note.status == "pending")
+        let doneColumn = this.columns.find( note => note.status == "done");
+        doneColumn.data = response.data.filter( note => note.status == "done")
+         
+        //this.columns.find( note => note.status == "done") = response.data.filter( note => note.status == "done");
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+
+    }
   }
+
 };
 
 /*     <img
@@ -50,3 +86,6 @@ export default {
       src="~assets/quasar-logo-full.svg"
     > */
 </script>
+<style scoped>
+
+</style>
