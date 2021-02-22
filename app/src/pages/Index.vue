@@ -11,7 +11,8 @@
           :title="item.title"
           :notes="item.data"
           :status="item.status"
-          v-on:update-note="getAllNotes"
+          v-on:new-note="newNote"
+          v-on:update-note="updateNote"
         />
         
       </div>
@@ -61,21 +62,46 @@ export default {
       axios
       .get('http://localhost:8080/show')
       .then(response => {
-        //console.log(response.data);
         this.allNotes = response.data
-        console.log("notes", this.allNotes)
+        //console.log("notes", this.allNotes)
         
         let pendingColumn = this.columns.find( note => note.status == "pending");
         pendingColumn.data = response.data.filter( note => note.status == "pending")
         let doneColumn = this.columns.find( note => note.status == "done");
         doneColumn.data = response.data.filter( note => note.status == "done")
-         
-        //this.columns.find( note => note.status == "done") = response.data.filter( note => note.status == "done");
       })
       .catch(function (error) {
         console.log(error);
       });
+    },
 
+    newNote(payload){
+      let pendingColumn = this.columns.find( note => note.status == "pending")
+      pendingColumn.data.push(payload)
+    },
+
+    updateNote(payload){
+      let updStatus = payload.status
+      if (updStatus == "pending"){
+        let pendingColumn = this.columns.find( column => column.status == "pending")
+        let currentNote = pendingColumn.data.find(note => note._id == payload._id)
+        if (currentNote){
+          let idx = pendingColumn.data.findIndex( note => note._id == payload._id)
+          currentNote[idx] = payload
+        } else {
+          pendingColumn.data.push(payload)
+        }
+      } else if (updStatus == "done"){
+        let doneColumn = this.columns.find( column => column.status == "done")
+        let currentNote = doneColumn.data.find(note => note._id == payload._id)
+        if (currentNote){
+          let idx = doneColumn.data.findIndex( note => note._id == payload._id)
+          doneColumn[idx] = payload
+        } else {
+          doneColumn.data.push(payload)
+        }
+      }
+      //console.log("upd note status", updStatus)
     }
   }
 

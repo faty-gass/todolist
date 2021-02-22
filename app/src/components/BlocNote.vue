@@ -71,7 +71,7 @@ import axios from "axios";
 export default {
   props: {
     title: String,
-    notes: [Object],
+    notes: Array,
     status: String,
   },
 
@@ -100,13 +100,14 @@ export default {
       axios(config)
         .then(response => {
           console.log(response.data);
-          this.$emit("update-note");
+          this.$emit("new-note", response.data);
           this.text = null;
         })
         .catch(function(error) {
           console.log(error);
         });
     },
+
     openEdit(id) {
       const currentNote = this.notes.filter( note => note._id == id)[0]
       console.log(currentNote)
@@ -115,6 +116,7 @@ export default {
       this.currentContent = currentNote.content;
       this.currentStatus = currentNote.status == "pending" ? false : true 
     },
+
     updateNote(){
       const newStatus = this.currentStatus ? "done" : "pending";
       const data = JSON.stringify({"status": newStatus, "content": this.currentContent});
@@ -131,7 +133,7 @@ export default {
       axios(config)
       .then((response) => {
         console.log(response.data);
-        this.$emit("update-note");
+        this.$emit("update-note", response.data.note);
         this.edit = false;
       })
       .catch(function (error) {
@@ -153,7 +155,7 @@ export default {
       .then((response) => {
         console.log(response.data);
         if (response.data.message){
-          this.$emit('update-note')
+          this.$emit('delete-note')
         }
       })
       .catch(function (error) {
