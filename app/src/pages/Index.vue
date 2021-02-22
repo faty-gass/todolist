@@ -82,27 +82,29 @@ export default {
 
     updateNote(payload){
       let updStatus = payload.status
+      let pendingColumn = this.columns.find( column => column.status == "pending").data
+      let doneColumn = this.columns.find( column => column.status == "done").data
       if (updStatus == "pending"){
-        let pendingColumn = this.columns.find( column => column.status == "pending")
-        let currentNote = pendingColumn.data.find(note => note._id == payload._id)
+        let currentNote = pendingColumn.find(note => note._id == payload._id)
         if (currentNote){
-          let idx = pendingColumn.data.findIndex( note => note._id == payload._id)
+          let idx = pendingColumn.findIndex( note => note._id == payload._id)
           currentNote[idx] = payload
         } else {
-          pendingColumn.data.push(payload)
+          pendingColumn.push(payload)
+          doneColumn.splice(doneColumn.findIndex( note => note._id == payload._id),1)
         }
       } else if (updStatus == "done"){
-        let doneColumn = this.columns.find( column => column.status == "done")
-        let currentNote = doneColumn.data.find(note => note._id == payload._id)
+        let currentNote = doneColumn.find(note => note._id == payload._id)
         if (currentNote){
-          let idx = doneColumn.data.findIndex( note => note._id == payload._id)
+          let idx = doneColumn.findIndex( note => note._id == payload._id)
           doneColumn[idx] = payload
         } else {
-          doneColumn.data.push(payload)
+          doneColumn.push(payload)
+          pendingColumn.splice(pendingColumn.findIndex( note => note._id == payload._id),1)
         }
       }
-      //console.log("upd note status", updStatus)
     }
+    
   }
 
 };
