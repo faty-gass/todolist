@@ -155,7 +155,7 @@ export default {
       .then((response) => {
         console.log(response.data);
         if (response.data.message){
-          this.$emit('delete-note')
+          this.$emit('delete-note',id)
         }
       })
       .catch(function (error) {

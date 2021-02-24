@@ -13,6 +13,7 @@
           :status="item.status"
           v-on:new-note="newNote"
           v-on:update-note="updateNote"
+          v-on:delete-note="deleteNote"
         />
         
       </div>
@@ -82,27 +83,32 @@ export default {
 
     updateNote(payload){
       let updStatus = payload.status
-      let pendingColumn = this.columns.find( column => column.status == "pending").data
-      let doneColumn = this.columns.find( column => column.status == "done").data
+      let dataColumn ;
+      let oppDataColumn ;
       if (updStatus == "pending"){
-        let currentNote = pendingColumn.find(note => note._id == payload._id)
-        if (currentNote){
-          let idx = pendingColumn.findIndex( note => note._id == payload._id)
-          currentNote[idx] = payload
-        } else {
-          pendingColumn.push(payload)
-          doneColumn.splice(doneColumn.findIndex( note => note._id == payload._id),1)
-        }
+        dataColumn = this.columns.find( column => column.status == "pending").data
+        oppDataColumn = this.columns.find( column => column.status == "done").data
       } else if (updStatus == "done"){
-        let currentNote = doneColumn.find(note => note._id == payload._id)
-        if (currentNote){
-          let idx = doneColumn.findIndex( note => note._id == payload._id)
-          doneColumn[idx] = payload
-        } else {
-          doneColumn.push(payload)
-          pendingColumn.splice(pendingColumn.findIndex( note => note._id == payload._id),1)
-        }
+        dataColumn = this.columns.find( column => column.status == "done").data
+        oppDataColumn = this.columns.find( column => column.status == "pending").data
       }
+      let currentNote = dataColumn.find(note => note._id == payload._id)
+      if (currentNote){
+        let idx = dataColumn.findIndex( note => note._id == payload._id)
+        currentNote[idx] = payload
+      } else {
+        dataColumn.push(payload)
+        oppDataColumn.splice(oppDataColumn.findIndex( note => note._id == payload._id),1)
+      }
+    },
+
+    deleteNote(payload){
+      this.columns.forEach( column => {
+        let idx = column.data.findIndex( note => note._id == payload)
+        if (idx >=0){
+          column.data.splice(idx, 1)
+        }
+      });
     }
     
   }
